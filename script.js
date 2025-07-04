@@ -6,28 +6,29 @@ const chatWindow = document.getElementById("chatWindow");
 // Check if configuration is loaded
 function checkConfiguration() {
   try {
-    // More detailed configuration checking
-    const hasWorkerURL =
-      typeof CLOUDFLARE_WORKER_URL !== "undefined" &&
-      CLOUDFLARE_WORKER_URL !== undefined &&
-      CLOUDFLARE_WORKER_URL !==
-        "https://your-worker-name.your-username.workers.dev" &&
-      CLOUDFLARE_WORKER_URL !==
-        "https://your-worker.your-subdomain.workers.dev";
+    // Check for both window.VARIABLE and direct VARIABLE (for backwards compatibility)
+    const workerURL =
+      window.CLOUDFLARE_WORKER_URL ||
+      (typeof CLOUDFLARE_WORKER_URL !== "undefined"
+        ? CLOUDFLARE_WORKER_URL
+        : undefined);
+    const apiKey =
+      window.OPENAI_API_KEY ||
+      (typeof OPENAI_API_KEY !== "undefined" ? OPENAI_API_KEY : undefined);
 
-    const hasAPIKey =
-      typeof OPENAI_API_KEY !== "undefined" &&
-      OPENAI_API_KEY !== undefined &&
-      OPENAI_API_KEY !== "your-api-key-here";
+    const hasWorkerURL =
+      workerURL !== undefined &&
+      workerURL !== "https://your-worker-name.your-username.workers.dev" &&
+      workerURL !== "https://your-worker.your-subdomain.workers.dev" &&
+      workerURL.trim() !== "";
+
+    const hasAPIKey = apiKey !== undefined && apiKey !== "your-api-key-here";
 
     console.log("Configuration check:", {
       hasWorkerURL,
       hasAPIKey,
-      workerURL:
-        typeof CLOUDFLARE_WORKER_URL !== "undefined"
-          ? CLOUDFLARE_WORKER_URL
-          : "undefined",
-      apiKeyExists: typeof OPENAI_API_KEY !== "undefined",
+      workerURL: workerURL || "undefined",
+      apiKeyExists: apiKey !== undefined,
     });
 
     if (!hasWorkerURL && !hasAPIKey) {
@@ -172,10 +173,13 @@ chatForm.addEventListener("submit", async (e) => {
     let workerUrl, apiKey;
     try {
       workerUrl =
-        typeof CLOUDFLARE_WORKER_URL !== "undefined"
+        window.CLOUDFLARE_WORKER_URL ||
+        (typeof CLOUDFLARE_WORKER_URL !== "undefined"
           ? CLOUDFLARE_WORKER_URL
-          : null;
-      apiKey = typeof OPENAI_API_KEY !== "undefined" ? OPENAI_API_KEY : null;
+          : null);
+      apiKey =
+        window.OPENAI_API_KEY ||
+        (typeof OPENAI_API_KEY !== "undefined" ? OPENAI_API_KEY : null);
     } catch (error) {
       throw new Error(
         "Configuration not found. Please ensure you have the secrets.js file in the same directory."

@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>L'Oréal Smart Product Advisor</title>
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* —— basic reset —— */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* —— body + fonts —— */
+      body {
+        font-family: "Montserrat", Arial, Helvetica, sans-serif;
+        color: #333;
+        display: flex;
+        justify-content: center;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        min-height: 100vh;
+        padding: 20px 0;
+      }
+
+      .page-wrapper {
+        width: 95%;
+        max-width: 800px;
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      /* header */
+      .site-header {
+        text-align: center;
+        padding: 40px 30px 30px;
+        background: linear-gradient(135deg, #000000 0%, #333333 100%);
+        color: white;
+        position: relative;
+      }
+
+      .site-header::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 4px;
+        background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+        border-radius: 2px;
+      }
+
+      .brand-logo {
+        max-width: 120px;
+        height: auto;
+        margin-bottom: 15px;
+        filter: brightness(0) invert(1);
+      }
+
+      .site-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #ffffff;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      /* chat window */
+      .chatbox {
+        margin: 0;
+        padding: 30px;
+        background: #fafbfc;
+      }
+
+      .chat-window {
+        height: 450px;
+        border: none;
+        border-radius: 20px;
+        padding: 25px;
+        font-size: 15px;
+        line-height: 1.6;
+        overflow-y: auto;
+        background: #ffffff;
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+        position: relative;
+      }
+
+      .chat-window::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .chat-window::-webkit-scrollbar-track {
+        background: #f1f3f4;
+        border-radius: 3px;
+      }
+
+      .chat-window::-webkit-scrollbar-thumb {
+        background: #c1c8cd;
+        border-radius: 3px;
+      }
+
+      .chat-window::-webkit-scrollbar-thumb:hover {
+        background: #a8b2b9;
+      }
+
+      /* messages */
+      .msg {
+        margin-bottom: 20px;
+        line-height: 1.6;
+        max-width: 75%;
+        padding: 14px 18px;
+        border-radius: 20px;
+        position: relative;
+        word-wrap: break-word;
+        animation: slideIn 0.5s ease-out;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px) scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes fadeInScale {
+        from {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      /* Thinking animation */
+      .msg.thinking {
+        animation: slideIn 0.3s ease-out;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #ffffff;
+        margin-left: 0;
+        margin-right: auto;
+        border-bottom-left-radius: 8px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .msg.thinking::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        animation: shimmer 1.5s infinite;
+      }
+
+      @keyframes shimmer {
+        0% {
+          left: -100%;
+        }
+        100% {
+          left: 100%;
+        }
+      }
+
+      .thinking-dots {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .thinking-dots::after {
+        content: "";
+        display: inline-block;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: currentColor;
+        animation: thinkingDots 1.4s infinite ease-in-out;
+      }
+
+      .thinking-dots::before {
+        content: "";
+        display: inline-block;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: currentColor;
+        margin-right: 4px;
+        animation: thinkingDots 1.4s infinite ease-in-out;
+        animation-delay: -0.2s;
+      }
+
+      .thinking-icon {
+        display: inline-block;
+        animation: thinkingPulse 1.5s infinite ease-in-out;
+        margin-right: 8px;
+      }
+
+      @keyframes thinkingPulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.1);
+          opacity: 0.8;
+        }
+      }
+
+      @keyframes thinkingDots {
+        0%,
+        80%,
+        100% {
+          transform: scale(0);
+          opacity: 0.5;
+        }
+        40% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      /* AI response animation */
+      .msg.ai.typing {
+        position: relative;
+        animation: fadeInScale 0.5s ease-out;
+      }
+
+      .msg.ai.typing::after {
+        content: "";
+        display: inline-block;
+        width: 3px;
+        height: 20px;
+        background: #333333;
+        margin-left: 2px;
+        animation: typingCursor 1s infinite;
+        vertical-align: middle;
+        border-radius: 1px;
+      }
+
+      @keyframes typingCursor {
+        0%,
+        50% {
+          opacity: 1;
+        }
+        51%,
+        100% {
+          opacity: 0;
+        }
+      }
+
+      .msg.user {
+        background: linear-gradient(135deg, #000000 0%, #333333 100%);
+        color: #ffffff;
+        margin-left: auto;
+        margin-right: 0;
+        border-bottom-right-radius: 8px;
+        position: relative;
+      }
+
+      .msg.user::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        right: -8px;
+        width: 0;
+        height: 0;
+        border: 8px solid transparent;
+        border-left-color: #333333;
+        border-bottom: none;
+      }
+
+      .msg.ai {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        color: #2c3e50;
+        margin-left: 0;
+        margin-right: auto;
+        border-bottom-left-radius: 8px;
+        border: 1px solid #dee2e6;
+        position: relative;
+      }
+
+      .msg.ai::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: -9px;
+        width: 0;
+        height: 0;
+        border: 8px solid transparent;
+        border-right-color: #e9ecef;
+        border-bottom: none;
+      }
+
+      .msg.system {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #ffffff;
+        text-align: center;
+        margin: 0 auto 25px;
+        border-radius: 20px;
+        font-size: 14px;
+        max-width: 85%;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      }
+
+      /* input row */
+      .chat-form {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+        padding: 0 5px;
+      }
+
+      .chat-form input {
+        flex: 1;
+        padding: 18px 24px;
+        border: 2px solid #e9ecef;
+        border-radius: 30px;
+        font-size: 15px;
+        font-family: "Montserrat", Arial, Helvetica, sans-serif;
+        transition: all 0.3s ease;
+        background: #ffffff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .chat-form input:focus {
+        outline: none;
+        border-color: #000000;
+        box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1);
+        transform: translateY(-1px);
+      }
+
+      .chat-form input::placeholder {
+        color: #6c757d;
+        font-weight: 400;
+      }
+
+      .chat-form button {
+        font-size: 20px;
+        background: linear-gradient(135deg, #000000 0%, #333333 100%);
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        padding: 15px;
+        width: 58px;
+        height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .chat-form button::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .chat-form button:hover::before {
+        left: 100%;
+      }
+
+      .chat-form button .material-icons {
+        font-size: 26px;
+        z-index: 1;
+      }
+
+      .chat-form button:hover {
+        background: linear-gradient(135deg, #333333 0%, #000000 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      .chat-form button:active {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      .chat-form button:focus {
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.2);
+      }
+
+      /* visually hidden */
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      /* footer */
+      .site-footer {
+        margin: 0;
+        text-align: center;
+        font-size: 13px;
+        color: #6c757d;
+        background: #f8f9fa;
+        padding: 25px 30px;
+        border-top: 1px solid #e9ecef;
+      }
+
+      .site-footer p {
+        margin-bottom: 12px;
+        font-weight: 500;
+      }
+
+      .site-footer nav {
+        margin-top: 12px;
+      }
+
+      .site-footer a {
+        margin: 0 15px;
+        color: #495057;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        padding: 5px 10px;
+        border-radius: 15px;
+      }
+
+      .site-footer a:hover {
+        color: #000000;
+        background: rgba(0, 0, 0, 0.05);
+        transform: translateY(-1px);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page-wrapper">
+      <!------- Header / Branding ------->
+      <header class="site-header">
+        <h1 class="site-title">L'Oréal Smart Product Advisor</h1>
+      </header>
+
+      <!------- Chat Area ------->
+      <main>
+        <section class="chatbox">
+          <div id="chatWindow" class="chat-window">
+            <!-- messages will be appended here via JS -->
+          </div>
+
+          <form id="chatForm" class="chat-form">
+            <label for="userInput" class="visually-hidden">Message</label>
+            <input
+              id="userInput"
+              name="userInput"
+              type="text"
+              placeholder="Ask me about L'Oréal products or routines…"
+              autocomplete="off"
+              required
+            />
+            <button type="submit" id="sendBtn">
+              <span class="material-icons">send</span>
+              <span class="visually-hidden">Send</span>
+            </button>
+          </form>
+        </section>
+      </main>
+
+      <!------- Footer Links ------->
+      <footer class="site-footer">
+        <p>&copy; 2025 L'Oréal. All rights reserved.</p>
+        <nav>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Use</a>
+          <a href="#">Contact</a>
+        </nav>
+      </footer>
+    </div>
+
+    <script>
+      // Embedded configuration
+      const CLOUDFLARE_WORKER_URL =
+        "https://loreal-chatbot-api.mmzuhd.workers.dev/";
+
+      /* DOM elements */
+      const chatForm = document.getElementById("chatForm");
+      const userInput = document.getElementById("userInput");
+      const chatWindow = document.getElementById("chatWindow");
+
+      // Conversation history to maintain context
+      let conversationHistory = [
+        {
+          role: "system",
+          content:
+            "You are a helpful L'Oréal product advisor. You only answer questions about L'Oréal products, beauty routines, skincare, haircare, and makeup. If someone asks about anything unrelated to L'Oréal or beauty, politely redirect them to ask about L'Oréal products instead. Keep your responses helpful, friendly, and focused on L'Oréal's product lines and beauty advice.",
+        },
+      ];
+
+      // Set initial message
+      function addMessage(content, type = "system") {
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `msg ${type}`;
+        messageDiv.textContent = content;
+        chatWindow.appendChild(messageDiv);
+
+        // Scroll to bottom of chat window
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+      }
+
+      // Enhanced function for animated thinking message
+      function showThinkingMessage() {
+        const thinkingDiv = document.createElement("div");
+        thinkingDiv.className = "msg thinking";
+        thinkingDiv.innerHTML = `
+          <span class="thinking-icon">🤔</span>
+          <span class="thinking-dots">Thinking</span>
+        `;
+        chatWindow.appendChild(thinkingDiv);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+        return thinkingDiv;
+      }
+
+      // Enhanced function for typing animation effect
+      function addMessageWithTyping(content, type = "ai") {
+        return new Promise((resolve) => {
+          const messageDiv = document.createElement("div");
+          messageDiv.className = `msg ${type} typing`;
+          chatWindow.appendChild(messageDiv);
+
+          // Scroll to bottom
+          chatWindow.scrollTop = chatWindow.scrollHeight;
+
+          // Typing effect
+          let index = 0;
+          const typingSpeed = 30; // milliseconds per character
+
+          function typeCharacter() {
+            if (index < content.length) {
+              messageDiv.textContent = content.substring(0, index + 1);
+              index++;
+              setTimeout(typeCharacter, typingSpeed);
+              // Keep scrolling as text appears
+              chatWindow.scrollTop = chatWindow.scrollHeight;
+            } else {
+              // Remove typing class when done
+              messageDiv.classList.remove("typing");
+              resolve();
+            }
+          }
+
+          // Start typing after a brief delay
+          setTimeout(typeCharacter, 200);
+        });
+      }
+
+      // Initialize chat with welcome message
+      setTimeout(() => {
+        addMessage(
+          "👋 Hello! I'm your L'Oréal Smart Product Advisor. Ask me about our skincare, haircare, makeup products, or beauty routines!"
+        );
+      }, 100);
+
+      /* Handle form submit */
+      chatForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        // Get user input
+        const userMessage = userInput.value.trim();
+        if (!userMessage) return;
+
+        // Display user message with animation
+        addMessage(userMessage, "user");
+
+        // Clear input field
+        userInput.value = "";
+
+        // Show enhanced thinking animation
+        const thinkingDiv = showThinkingMessage();
+
+        try {
+          // Add user message to conversation history
+          conversationHistory.push({
+            role: "user",
+            content: userMessage,
+          });
+
+          // Use Cloudflare Worker
+          const response = await fetch(CLOUDFLARE_WORKER_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              messages: conversationHistory,
+            }),
+          });
+
+          // Parse the response
+          const data = await response.json();
+
+          // Check if we got a valid response
+          if (data.choices && data.choices[0] && data.choices[0].message) {
+            const aiResponse = data.choices[0].message.content;
+
+            // Add AI response to conversation history
+            conversationHistory.push({
+              role: "assistant",
+              content: aiResponse,
+            });
+
+            // Display AI response with typing animation, then remove thinking bubble
+            await addMessageWithTyping(aiResponse, "ai");
+
+            // Remove thinking message AFTER typing is complete
+            if (thinkingDiv.parentNode) {
+              chatWindow.removeChild(thinkingDiv);
+            }
+          } else {
+            // Handle error case with typing animation
+            await addMessageWithTyping(
+              "Sorry, I'm having trouble connecting right now. Please try again!",
+              "ai"
+            );
+
+            // Remove thinking message AFTER error message is typed
+            if (thinkingDiv.parentNode) {
+              chatWindow.removeChild(thinkingDiv);
+            }
+          }
+        } catch (error) {
+          // Show error message with typing animation first
+          console.error("Error:", error);
+          await addMessageWithTyping(
+            "Sorry, I encountered an error. Please check your connection and try again.",
+            "ai"
+          );
+
+          // Remove thinking message AFTER error message is typed
+          if (thinkingDiv.parentNode) {
+            chatWindow.removeChild(thinkingDiv);
+          }
+        }
+      });
+
+      // Focus on input field when page loads
+      userInput.focus();
+    </script>
+  </body>
+</html>
