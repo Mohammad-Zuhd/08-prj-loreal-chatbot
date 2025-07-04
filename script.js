@@ -31,33 +31,30 @@ function checkConfiguration() {
       apiKeyExists: apiKey !== undefined,
     });
 
-    if (!hasWorkerURL && !hasAPIKey) {
-      addMessage(
-        "⚠️ Setup Required: Please copy 'secrets-template.js' to 'secrets.js' and configure your Cloudflare Worker URL or OpenAI API key. See the README.md for detailed setup instructions.",
-        "system"
-      );
-      addMessage(
-        "📋 Quick Setup:\n1. Copy secrets-template.js to secrets.js\n2. Add your Cloudflare Worker URL or OpenAI API key\n3. Refresh this page",
-        "system"
-      );
-      // Disable the form
-      chatForm.style.opacity = "0.5";
-      chatForm.style.pointerEvents = "none";
-      userInput.placeholder = "Setup required - see messages above";
-      return false;
+    // If we have a valid configuration, we're good to go
+    if (hasWorkerURL || hasAPIKey) {
+      return true;
     }
-    return true;
-  } catch (error) {
-    // If we can't even check the variables, they definitely don't exist
+
+    // Show setup messages only if no valid configuration is found
     addMessage(
-      "⚠️ Configuration Missing: The secrets.js file was not found. Please check the setup instructions in README.md",
+      "⚠️ Setup Required: Please configure your Cloudflare Worker URL or OpenAI API key. See the README.md for detailed setup instructions.",
+      "system"
+    );
+    addMessage(
+      "📋 Quick Setup:\n1. Update the Cloudflare Worker URL in the embedded script\n2. Or add your OpenAI API key\n3. Refresh this page",
       "system"
     );
     // Disable the form
     chatForm.style.opacity = "0.5";
     chatForm.style.pointerEvents = "none";
-    userInput.placeholder = "Configuration required - see message above";
+    userInput.placeholder = "Setup required - see messages above";
     return false;
+  } catch (error) {
+    console.error("Configuration check error:", error);
+    // Don't show error messages if we're just missing the secrets file
+    // The embedded config should work fine
+    return true;
   }
 }
 
@@ -128,7 +125,7 @@ function addMessageWithTyping(content, type = "ai") {
 }
 
 // Initialize chat with welcome message
-// Use setTimeout to ensure DOM is ready and secrets.js has had time to load
+// Use setTimeout to ensure DOM is ready and configuration has had time to load
 setTimeout(() => {
   if (checkConfiguration()) {
     addMessage(
@@ -169,7 +166,7 @@ chatForm.addEventListener("submit", async (e) => {
     // Check if we have Cloudflare Worker URL and prefer that for security
     let response;
 
-    // Check if secrets.js loaded properly with try-catch
+    // Check configuration with try-catch
     let workerUrl, apiKey;
     try {
       workerUrl =
@@ -182,7 +179,7 @@ chatForm.addEventListener("submit", async (e) => {
         (typeof OPENAI_API_KEY !== "undefined" ? OPENAI_API_KEY : null);
     } catch (error) {
       throw new Error(
-        "Configuration not found. Please ensure you have the secrets.js file in the same directory."
+        "Configuration not found. Please ensure your configuration is properly set up."
       );
     }
 
@@ -217,7 +214,7 @@ chatForm.addEventListener("submit", async (e) => {
       });
     } else {
       throw new Error(
-        "No valid configuration found. Please set up either Cloudflare Worker URL or OpenAI API key in secrets.js"
+        "No valid configuration found. Please set up either Cloudflare Worker URL or OpenAI API key in your configuration"
       );
     }
 
