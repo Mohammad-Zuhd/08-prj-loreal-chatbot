@@ -5,9 +5,27 @@ const chatWindow = document.getElementById("chatWindow");
 
 // Check if configuration is loaded
 function checkConfiguration() {
-  if (typeof CLOUDFLARE_WORKER_URL === "undefined") {
+  try {
+    // Check if secrets.js loaded and variables are defined
+    if (
+      typeof CLOUDFLARE_WORKER_URL === "undefined" &&
+      typeof OPENAI_API_KEY === "undefined"
+    ) {
+      addMessage(
+        "⚠️ Configuration Error: The secrets.js file is missing or not loaded properly. Please ensure you're running this chatbot from the correct directory with the secrets.js file.",
+        "system"
+      );
+      // Disable the form
+      chatForm.style.opacity = "0.5";
+      chatForm.style.pointerEvents = "none";
+      userInput.placeholder = "Configuration required - see message above";
+      return false;
+    }
+    return true;
+  } catch (error) {
+    // If we can't even check the variables, they definitely don't exist
     addMessage(
-      "⚠️ Configuration Error: Please ensure you're running this chatbot from the correct directory with the secrets.js file. The chatbot needs proper configuration to work.",
+      "⚠️ Configuration Error: The secrets.js file is missing. Please ensure you have the secrets.js file in the same directory as this HTML file.",
       "system"
     );
     // Disable the form
@@ -16,7 +34,6 @@ function checkConfiguration() {
     userInput.placeholder = "Configuration required - see message above";
     return false;
   }
-  return true;
 }
 
 // Conversation history to maintain context
@@ -86,11 +103,14 @@ function addMessageWithTyping(content, type = "ai") {
 }
 
 // Initialize chat with welcome message
-if (checkConfiguration()) {
-  addMessage(
-    "👋 Hello! I'm your L'Oréal Smart Product Advisor. Ask me about our skincare, haircare, makeup products, or beauty routines!"
-  );
-}
+// Use setTimeout to ensure DOM is ready and secrets.js has had time to load
+setTimeout(() => {
+  if (checkConfiguration()) {
+    addMessage(
+      "👋 Hello! I'm your L'Oréal Smart Product Advisor. Ask me about our skincare, haircare, makeup products, or beauty routines!"
+    );
+  }
+}, 100);
 
 /* Handle form submit */
 chatForm.addEventListener("submit", async (e) => {
@@ -124,20 +144,27 @@ chatForm.addEventListener("submit", async (e) => {
     // Check if we have Cloudflare Worker URL and prefer that for security
     let response;
 
-    // Check if secrets.js loaded properly
-    if (typeof CLOUDFLARE_WORKER_URL === "undefined") {
+    // Check if secrets.js loaded properly with try-catch
+    let workerUrl, apiKey;
+    try {
+      workerUrl =
+        typeof CLOUDFLARE_WORKER_URL !== "undefined"
+          ? CLOUDFLARE_WORKER_URL
+          : null;
+      apiKey = typeof OPENAI_API_KEY !== "undefined" ? OPENAI_API_KEY : null;
+    } catch (error) {
       throw new Error(
-        "Configuration not found. Please ensure you're running this from the correct directory with secrets.js file."
+        "Configuration not found. Please ensure you have the secrets.js file in the same directory."
       );
     }
 
     if (
-      CLOUDFLARE_WORKER_URL !==
-        "https://your-worker-name.your-username.workers.dev" &&
-      CLOUDFLARE_WORKER_URL !== "https://your-worker.your-subdomain.workers.dev"
+      workerUrl &&
+      workerUrl !== "https://your-worker-name.your-username.workers.dev" &&
+      workerUrl !== "https://your-worker.your-subdomain.workers.dev"
     ) {
       // Use Cloudflare Worker (secure deployment)
-      response = await fetch(CLOUDFLARE_WORKER_URL, {
+      response = await fetch(workerUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -146,15 +173,12 @@ chatForm.addEventListener("submit", async (e) => {
           messages: conversationHistory,
         }),
       });
-    } else if (
-      typeof OPENAI_API_KEY !== "undefined" &&
-      OPENAI_API_KEY !== "your-api-key-here"
-    ) {
+    } else if (apiKey && apiKey !== "your-api-key-here") {
       // Fallback to direct OpenAI API call (for development only)
       response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
+          Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
