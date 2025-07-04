@@ -6,12 +6,31 @@ const chatWindow = document.getElementById("chatWindow");
 // Check if configuration is loaded
 function checkConfiguration() {
   try {
-    // Check if secrets.js loaded and variables are defined
-    if (
-      (typeof CLOUDFLARE_WORKER_URL === "undefined" ||
-        CLOUDFLARE_WORKER_URL === undefined) &&
-      (typeof OPENAI_API_KEY === "undefined" || OPENAI_API_KEY === undefined)
-    ) {
+    // More detailed configuration checking
+    const hasWorkerURL =
+      typeof CLOUDFLARE_WORKER_URL !== "undefined" &&
+      CLOUDFLARE_WORKER_URL !== undefined &&
+      CLOUDFLARE_WORKER_URL !==
+        "https://your-worker-name.your-username.workers.dev" &&
+      CLOUDFLARE_WORKER_URL !==
+        "https://your-worker.your-subdomain.workers.dev";
+
+    const hasAPIKey =
+      typeof OPENAI_API_KEY !== "undefined" &&
+      OPENAI_API_KEY !== undefined &&
+      OPENAI_API_KEY !== "your-api-key-here";
+
+    console.log("Configuration check:", {
+      hasWorkerURL,
+      hasAPIKey,
+      workerURL:
+        typeof CLOUDFLARE_WORKER_URL !== "undefined"
+          ? CLOUDFLARE_WORKER_URL
+          : "undefined",
+      apiKeyExists: typeof OPENAI_API_KEY !== "undefined",
+    });
+
+    if (!hasWorkerURL && !hasAPIKey) {
       addMessage(
         "⚠️ Setup Required: Please copy 'secrets-template.js' to 'secrets.js' and configure your Cloudflare Worker URL or OpenAI API key. See the README.md for detailed setup instructions.",
         "system"
