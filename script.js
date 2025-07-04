@@ -3,6 +3,22 @@ const chatForm = document.getElementById("chatForm");
 const userInput = document.getElementById("userInput");
 const chatWindow = document.getElementById("chatWindow");
 
+// Check if configuration is loaded
+function checkConfiguration() {
+  if (typeof CLOUDFLARE_WORKER_URL === "undefined") {
+    addMessage(
+      "⚠️ Configuration Error: Please ensure you're running this chatbot from the correct directory with the secrets.js file. The chatbot needs proper configuration to work.",
+      "system"
+    );
+    // Disable the form
+    chatForm.style.opacity = "0.5";
+    chatForm.style.pointerEvents = "none";
+    userInput.placeholder = "Configuration required - see message above";
+    return false;
+  }
+  return true;
+}
+
 // Conversation history to maintain context
 let conversationHistory = [
   {
@@ -70,13 +86,20 @@ function addMessageWithTyping(content, type = "ai") {
 }
 
 // Initialize chat with welcome message
-addMessage(
-  "👋 Hello! I'm your L'Oréal Smart Product Advisor. Ask me about our skincare, haircare, makeup products, or beauty routines!"
-);
+if (checkConfiguration()) {
+  addMessage(
+    "👋 Hello! I'm your L'Oréal Smart Product Advisor. Ask me about our skincare, haircare, makeup products, or beauty routines!"
+  );
+}
 
 /* Handle form submit */
 chatForm.addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  // Check configuration before processing
+  if (!checkConfiguration()) {
+    return;
+  }
 
   // Get user input
   const userMessage = userInput.value.trim();
@@ -100,8 +123,17 @@ chatForm.addEventListener("submit", async (e) => {
 
     // Check if we have Cloudflare Worker URL and prefer that for security
     let response;
+
+    // Check if secrets.js loaded properly
+    if (typeof CLOUDFLARE_WORKER_URL === "undefined") {
+      throw new Error(
+        "Configuration not found. Please ensure you're running this from the correct directory with secrets.js file."
+      );
+    }
+
     if (
-      typeof CLOUDFLARE_WORKER_URL !== "undefined" &&
+      CLOUDFLARE_WORKER_URL !==
+        "https://your-worker-name.your-username.workers.dev" &&
       CLOUDFLARE_WORKER_URL !== "https://your-worker.your-subdomain.workers.dev"
     ) {
       // Use Cloudflare Worker (secure deployment)
@@ -114,7 +146,10 @@ chatForm.addEventListener("submit", async (e) => {
           messages: conversationHistory,
         }),
       });
-    } else {
+    } else if (
+      typeof OPENAI_API_KEY !== "undefined" &&
+      OPENAI_API_KEY !== "your-api-key-here"
+    ) {
       // Fallback to direct OpenAI API call (for development only)
       response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
@@ -128,6 +163,10 @@ chatForm.addEventListener("submit", async (e) => {
           max_completion_tokens: 300,
         }),
       });
+    } else {
+      throw new Error(
+        "No valid configuration found. Please set up either Cloudflare Worker URL or OpenAI API key in secrets.js"
+      );
     }
 
     // Parse the response
