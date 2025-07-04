@@ -60,31 +60,21 @@
       </footer>
     </div>
 
-    <!-- Load secrets.js conditionally and handle errors -->
+    <!-- Configuration and script loading -->
     <script>
-      // Create a script element to load secrets.js
-      const secretsScript = document.createElement("script");
-      secretsScript.src = "secrets.js";
-      secretsScript.onload = function () {
-        // secrets.js loaded successfully, now load script.js
-        console.log("secrets.js loaded successfully");
-        loadMainScript();
-      };
-      secretsScript.onerror = function () {
-        // If secrets.js fails to load, define empty variables to prevent errors
-        console.warn("secrets.js not found - running in demo mode");
-        window.CLOUDFLARE_WORKER_URL = undefined;
-        window.OPENAI_API_KEY = undefined;
-        // Still load the main script
-        loadMainScript();
-      };
-      document.head.appendChild(secretsScript);
+      // Embedded configuration for standalone use
+      // Replace this with your actual Cloudflare Worker URL
+      window.CLOUDFLARE_WORKER_URL =
+        "https://loreal-chatbot-api.mmzuhd.workers.dev/";
 
-      function loadMainScript() {
-        const mainScript = document.createElement("script");
-        mainScript.src = "script.js";
-        document.head.appendChild(mainScript);
-      }
+      // Optional: API key for direct OpenAI access (not recommended for production)
+      // window.OPENAI_API_KEY = "your-api-key-here";
+
+      console.log("Configuration loaded:", {
+        workerURL: window.CLOUDFLARE_WORKER_URL,
+        hasAPIKey: typeof window.OPENAI_API_KEY !== "undefined",
+      });
     </script>
+    <script src="script.js"></script>
   </body>
 </html>
