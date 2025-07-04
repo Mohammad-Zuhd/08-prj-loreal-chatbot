@@ -14,6 +14,11 @@ A branded chatbot for L'Oréal that helps customers with product recommendations
 
 ## Setup Instructions
 
+### Quick Start:
+
+1. **Copy the template**: Copy `secrets-template.js` to `secrets.js`
+2. **Choose your setup method below**
+
 ### For Secure Deployment (Recommended - Full Points):
 
 1. **Create a Cloudflare Worker** (see instructions below)

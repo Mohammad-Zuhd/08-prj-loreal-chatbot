@@ -8,24 +8,29 @@ function checkConfiguration() {
   try {
     // Check if secrets.js loaded and variables are defined
     if (
-      typeof CLOUDFLARE_WORKER_URL === "undefined" &&
-      typeof OPENAI_API_KEY === "undefined"
+      (typeof CLOUDFLARE_WORKER_URL === "undefined" ||
+        CLOUDFLARE_WORKER_URL === undefined) &&
+      (typeof OPENAI_API_KEY === "undefined" || OPENAI_API_KEY === undefined)
     ) {
       addMessage(
-        "⚠️ Configuration Error: The secrets.js file is missing or not loaded properly. Please ensure you're running this chatbot from the correct directory with the secrets.js file.",
+        "⚠️ Setup Required: Please copy 'secrets-template.js' to 'secrets.js' and configure your Cloudflare Worker URL or OpenAI API key. See the README.md for detailed setup instructions.",
+        "system"
+      );
+      addMessage(
+        "📋 Quick Setup:\n1. Copy secrets-template.js to secrets.js\n2. Add your Cloudflare Worker URL or OpenAI API key\n3. Refresh this page",
         "system"
       );
       // Disable the form
       chatForm.style.opacity = "0.5";
       chatForm.style.pointerEvents = "none";
-      userInput.placeholder = "Configuration required - see message above";
+      userInput.placeholder = "Setup required - see messages above";
       return false;
     }
     return true;
   } catch (error) {
     // If we can't even check the variables, they definitely don't exist
     addMessage(
-      "⚠️ Configuration Error: The secrets.js file is missing. Please ensure you have the secrets.js file in the same directory as this HTML file.",
+      "⚠️ Configuration Missing: The secrets.js file was not found. Please check the setup instructions in README.md",
       "system"
     );
     // Disable the form

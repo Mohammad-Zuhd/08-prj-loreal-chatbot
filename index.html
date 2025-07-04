@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -61,8 +60,19 @@
       </footer>
     </div>
 
-    <!-- secrets.js can be removed when using Cloudflare Workers for API requests -->
-    <script src="secrets.js"></script>
+    <!-- Load secrets.js conditionally and handle errors -->
+    <script>
+      // Create a script element to load secrets.js
+      const secretsScript = document.createElement("script");
+      secretsScript.src = "secrets.js";
+      secretsScript.onerror = function () {
+        // If secrets.js fails to load, define empty variables to prevent errors
+        console.warn("secrets.js not found - running in demo mode");
+        window.CLOUDFLARE_WORKER_URL = undefined;
+        window.OPENAI_API_KEY = undefined;
+      };
+      document.head.appendChild(secretsScript);
+    </script>
     <script src="script.js"></script>
   </body>
 </html>
